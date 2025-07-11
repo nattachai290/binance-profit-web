@@ -1,13 +1,5 @@
 import type { NextConfig } from 'next';
 
-interface CustomExperimental {
-    missingSuspenseWithCSRBailout: boolean;
-}
-
-const nextConfig: NextConfig & { experimental: CustomExperimental } = {
-    experimental: {
-        missingSuspenseWithCSRBailout: false,
-    }
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
