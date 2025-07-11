@@ -50,10 +50,11 @@ export default function TradeSummary() {
     };
 
     useEffect(() => {
-        fetchTradeSummary();
-        fetchSpot();
-        fetchEarn();
-        fetchTicker();
+        void fetchTradeSummary();
+        void fetchSpot();
+        void fetchEarn();
+        void fetchTicker();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const removeTrailingFDUSD = (asset: string) => {
@@ -68,8 +69,12 @@ export default function TradeSummary() {
 
             const resp: Price[] = await req.json();
             setPrices(resp);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unknown error occurred');
+            }
         } finally {
             setLoading(false);
         }
@@ -116,8 +121,13 @@ export default function TradeSummary() {
                     }
                 }
             })));
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+
         } finally {
             setLoading(false);
         }
@@ -158,8 +168,13 @@ export default function TradeSummary() {
             })));
 
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+
         } finally {
             setLoading(false);
         }
@@ -211,8 +226,13 @@ export default function TradeSummary() {
             );
             const results = await Promise.all(promises);
             setSummaryData(results);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+
         } finally {
             setLoading(false);
         }
