@@ -7,7 +7,6 @@ import {useTradeStore} from '@/store/tradeStore';
 import {CryptoIcon} from '@/assets/icons/crypto-icons/CoinIcon';
 import {ProfitTotalChart} from '@/assets/chart/PortfolioChart';
 import {AccountSummary, Price} from "@/types/trade";
-import {Suspense} from 'react'
 
 type SummaryData = {
     symbol: string;
@@ -331,14 +330,12 @@ export default function TradeSummary() {
                             <td className="p-4 border">{Math.floor(Number(item.lastBuyPrice) * 100) / 100}</td>
                             <td className="p-4 border">{Math.floor(Number(item.lastSellPrice) * 100) / 100}</td>
                             <td className="p-4 border">
-                                <Suspense>
-                                    <button
-                                        onClick={() => handleViewDetails(item.symbol)}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                                    >
-                                        View Details
-                                    </button>
-                                </Suspense>
+                                <button
+                                    onClick={() => handleViewDetails(item.symbol)}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                >
+                                    View Details
+                                </button>
                             </td>
                         </tr>
                     )

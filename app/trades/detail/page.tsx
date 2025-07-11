@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, {Suspense} from 'react';
 import Link from 'next/link';
 import {calculateProfit} from '@/utils/trade';
 import {useTradeStore} from '@/store/tradeStore';
 import {useSearchParams} from 'next/navigation';
 
 
-export default function TradeDetail() {
+function TradeDetailContent() {
     const searchParams = useSearchParams();
     const symbol = searchParams.get('symbol');
     const getSymbolTrades = useTradeStore(state => state.getSymbolTrades);
@@ -105,5 +105,14 @@ export default function TradeDetail() {
             </div>
         </div>
 
+    );
+}
+
+
+export default function TradeDetail() {
+    return (
+        <Suspense fallback={<div className="p-4">Loading...</div>}>
+            <TradeDetailContent/>
+        </Suspense>
     );
 }
