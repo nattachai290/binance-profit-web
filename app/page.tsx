@@ -69,8 +69,9 @@ export default function TradeSummary() {
             const resp: Price[] = await req.json();
             setPrices(resp);
         } catch (err: unknown) {
+            console.error(err);
             if (err instanceof Error) {
-                setError(err.message);
+                setError('fetchTicker '+err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -88,21 +89,23 @@ export default function TradeSummary() {
                         return res.json();
                     })
                     .then(resp => {
-                        return {
-                            asset: resp.rows[0].asset,
-                            productId: resp.rows[0].productId,
-                            autoSubscribe: resp.rows[0].autoSubscribe,
-                            canRedeem: resp.rows[0].canRedeem,
-                            collateralAmount: resp.rows[0].collateralAmount,
-                            rewards: {
-                                cumulativeBonus: resp.rows[0].cumulativeBonusRewards,
-                                cumulativeRealTime: resp.rows[0].cumulativeRealTimeRewards,
-                                cumulativeTotal: resp.rows[0].cumulativeTotalRewards,
-                                yesterdayRealTime: resp.rows[0].yesterdayRealTimeRewards
-                            },
-                            latestAnnualPercentageRate: resp.rows[0].latestAnnualPercentageRate,
-                            totalAmount: resp.rows[0].totalAmount
-                        };
+                        if (resp.rows[0]) {
+                            return {
+                                asset: resp.rows[0].asset,
+                                productId: resp.rows[0].productId,
+                                autoSubscribe: resp.rows[0].autoSubscribe,
+                                canRedeem: resp.rows[0].canRedeem,
+                                collateralAmount: resp.rows[0].collateralAmount,
+                                rewards: {
+                                    cumulativeBonus: resp.rows[0].cumulativeBonusRewards,
+                                    cumulativeRealTime: resp.rows[0].cumulativeRealTimeRewards,
+                                    cumulativeTotal: resp.rows[0].cumulativeTotalRewards,
+                                    yesterdayRealTime: resp.rows[0].yesterdayRealTimeRewards
+                                },
+                                latestAnnualPercentageRate: resp.rows[0].latestAnnualPercentageRate,
+                                totalAmount: resp.rows[0].totalAmount
+                            };
+                        }
                     })
             );
             const results = await Promise.all(promises);
@@ -121,8 +124,9 @@ export default function TradeSummary() {
                 }
             })));
         } catch (err: unknown) {
+            console.error(err);
             if (err instanceof Error) {
-                setError(err.message);
+                setError('fetchEarn '+err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -139,6 +143,7 @@ export default function TradeSummary() {
             if (!res.ok) throw new Error(`Error ${res.status}`);
 
             const acc: AccountSummary = await res.json();
+            console.log(acc);
 
             setSummaryData(prevData => prevData.map(summary => ({
                 ...summary,
@@ -168,8 +173,9 @@ export default function TradeSummary() {
 
 
         } catch (err: unknown) {
+            console.error(err);
             if (err instanceof Error) {
-                setError(err.message);
+                setError('fetchSpot '+err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -226,8 +232,9 @@ export default function TradeSummary() {
             const results = await Promise.all(promises);
             setSummaryData(results);
         } catch (err: unknown) {
+            console.error(err);
             if (err instanceof Error) {
-                setError(err.message);
+                setError('fetchTradeSummary '+ err.message);
             } else {
                 setError('An unknown error occurred');
             }
