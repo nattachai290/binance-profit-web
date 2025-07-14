@@ -109,20 +109,54 @@ export default function TradeSummary() {
                     })
             );
             const results = await Promise.all(promises);
-            setSummaryData(prevData => prevData.map(summary => ({
-                ...summary,
-                balances: {
-                    ...summary.balances,
-                    earn: {
-                        totalAmount: results.reduce((total, earnProduct) => {
-                            if (earnProduct && earnProduct.asset === removeTrailingFDUSD(summary.symbol)) {
-                                return total + parseFloat(earnProduct.totalAmount);
+            console.log(results);
+            setSummaryData(prevData => {
+                if (!prevData || prevData.length === 0) {
+                    // If prevData is empty, create new data structure
+                    return symbols.map(symbol => ({
+                        symbol,
+                        totalProfit: 0,
+                        tradeCount: 0,
+                        hold: false,
+                        lastBuyPrice: 0,
+                        lastSellPrice: 0,
+                        balances: {
+                            spot: {
+                                asset: '',
+                                free: 0,
+                                locked: 0
+                            },
+                            earn: {
+                                totalAmount: results.reduce((total, earnProduct) => {
+                                    if (earnProduct && earnProduct.asset === removeTrailingFDUSD(symbol)) {
+                                        return total + earnProduct.totalAmount;
+                                    }
+                                    return total;
+                                }, 0)
                             }
-                            return total;
-                        }, 0)
-                    }
+                        }
+                    }));
                 }
-            })));
+
+                // If prevData exists, update earn balances
+                return prevData.map(summary => ({
+                    ...summary,
+                    balances: {
+                        ...summary.balances,
+                        spot: { ...summary.balances.spot },
+                        earn: {
+                            ...summary.balances.earn,
+                            totalAmount: results.reduce((total, earnProduct) => {
+                                if (earnProduct && earnProduct.asset === removeTrailingFDUSD(summary.symbol)) {
+                                    return total + earnProduct.totalAmount;
+                                }
+                                return total;
+                            }, 0)
+                        }
+                    }
+                }));
+            });
+
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
@@ -145,33 +179,67 @@ export default function TradeSummary() {
             const acc: AccountSummary = await res.json();
             console.log(acc);
 
-            setSummaryData(prevData => prevData.map(summary => ({
-                ...summary,
-                balances: {
-                    spot: acc.balances.find(balance =>
-                        balance.asset === removeTrailingFDUSD(summary.symbol)
-                    ) ? {
-                        asset: acc.balances.find(balance =>
-                            balance.asset === removeTrailingFDUSD(summary.symbol)
-                        )!.asset,
-                        free: parseFloat(acc.balances.find(balance =>
-                            balance.asset === removeTrailingFDUSD(summary.symbol)
-                        )!.free),
-                        locked: parseFloat(acc.balances.find(balance =>
-                            balance.asset === removeTrailingFDUSD(summary.symbol)
-                        )!.locked)
-                    } : {
-                        asset: '',
-                        free: 0,
-                        locked: 0
-                    },
-                    earn: {
-                        ...summary.balances.earn,
-                    }
+            setSummaryData(prevData => {
+                if (!prevData || prevData.length === 0) {
+                    return symbols.map(symbol => ({
+                        symbol,
+                        totalProfit: 0,
+                        tradeCount: 0,
+                        hold: false,
+                        lastBuyPrice: 0,
+                        lastSellPrice: 0,
+                        balances: {
+                            spot: acc.balances.find(balance =>
+                                balance.asset === removeTrailingFDUSD(symbol)
+                            ) ? {
+                                asset: acc.balances.find(balance =>
+                                    balance.asset === removeTrailingFDUSD(symbol)
+                                )!.asset,
+                                free: parseFloat(acc.balances.find(balance =>
+                                    balance.asset === removeTrailingFDUSD(symbol)
+                                )!.free),
+                                locked: parseFloat(acc.balances.find(balance =>
+                                    balance.asset === removeTrailingFDUSD(symbol)
+                                )!.locked)
+                            } : {
+                                asset: '',
+                                free: 0,
+                                locked: 0
+                            },
+                            earn: {
+                                totalAmount: 0
+                            }
+                        }
+                    }));
                 }
-            })));
 
-
+                return prevData.map(summary => ({
+                    ...summary,
+                    balances: {
+                        ...summary.balances,
+                        spot: acc.balances.find(balance =>
+                            balance.asset === removeTrailingFDUSD(summary.symbol)
+                        ) ? {
+                            asset: acc.balances.find(balance =>
+                                balance.asset === removeTrailingFDUSD(summary.symbol)
+                            )!.asset,
+                            free: parseFloat(acc.balances.find(balance =>
+                                balance.asset === removeTrailingFDUSD(summary.symbol)
+                            )!.free),
+                            locked: parseFloat(acc.balances.find(balance =>
+                                balance.asset === removeTrailingFDUSD(summary.symbol)
+                            )!.locked)
+                        } : {
+                            asset: '',
+                            free: 0,
+                            locked: 0
+                        },
+                        earn: {
+                            ...summary.balances.earn
+                        }
+                    }
+                }));
+            });
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
@@ -197,7 +265,6 @@ export default function TradeSummary() {
                     .then(trades => {
                         setSymbolData(symbol, trades);
                         const profitResults = calculateProfit(trades);
-                        const existingBalances = summaryData?.find(s => s.symbol === symbol)?.balances;
 
                         const lastBuyPrice = profitResults.tradeResult.reduce((acc, trade) => {
                             return trade.buyId > acc.maxId
@@ -217,20 +284,46 @@ export default function TradeSummary() {
                             totalProfit: profitResults.tradeResult.reduce((sum, p) => sum + p.profit, 0),
                             tradeCount: trades.length,
                             hold: profitResults.hold,
-                            lastBuyPrice: lastBuyPrice,
-                            lastSellPrice: lastSellPrice,
-                            balances: existingBalances || {
-                                spot: {
-                                    asset: '', free: 0, locked: 0
-                                }, earn: {
-                                    totalAmount: 0
-                                }
-                            }
+                            lastBuyPrice,
+                            lastSellPrice
                         };
                     })
             );
             const results = await Promise.all(promises);
-            setSummaryData(results);
+            console.log(results);
+
+            setSummaryData(prevData => {
+                if (!prevData || prevData.length === 0) {
+                    // If prevData is empty, create new data structure
+                    return results.map(result => ({
+                        ...result,
+                        balances: {
+                            spot: {
+                                asset: '',
+                                free: 0,
+                                locked: 0
+                            },
+                            earn: {
+                                totalAmount: 0
+                            }
+                        }
+                    }));
+                }
+
+                // If prevData exists, update trade data while preserving balances
+                return prevData.map(summary => {
+                    const newData = results.find(r => r.symbol === summary.symbol);
+                    return newData ? {
+                        ...summary,
+                        ...newData,
+                        balances: {
+                            ...summary.balances,
+                            spot: { ...summary.balances.spot },
+                            earn: { ...summary.balances.earn }
+                        }
+                    } : summary;
+                });
+            });
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
