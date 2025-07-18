@@ -59,6 +59,16 @@ export function calculateProfit(trades: Trade[]): TradeHeader {
             summarySell: sellSum,
             summaryBuy: buySum,
         });
+    }else {
+        tradeResults.push({
+            sellId: lastSellId,
+            lastSellPrice: lastSellPrice,
+            buyId: lastBuyId,
+            lastBuyPrice: lastBuyPrice,
+            profit: totalUSD * -1,
+            summarySell: sellSum,
+            summaryBuy: buySum,
+        });
     }
     return {hold, tradeResult: tradeResults};
 }

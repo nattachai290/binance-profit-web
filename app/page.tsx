@@ -71,7 +71,7 @@ export default function TradeSummary() {
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
-                setError('fetchTicker '+err.message);
+                setError('fetchTicker ' + err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -143,7 +143,7 @@ export default function TradeSummary() {
                     ...summary,
                     balances: {
                         ...summary.balances,
-                        spot: { ...summary.balances.spot },
+                        spot: {...summary.balances.spot},
                         earn: {
                             ...summary.balances.earn,
                             totalAmount: results.reduce((total, earnProduct) => {
@@ -160,7 +160,7 @@ export default function TradeSummary() {
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
-                setError('fetchEarn '+err.message);
+                setError('fetchEarn ' + err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -243,7 +243,7 @@ export default function TradeSummary() {
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
-                setError('fetchSpot '+err.message);
+                setError('fetchSpot ' + err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -318,8 +318,8 @@ export default function TradeSummary() {
                         ...newData,
                         balances: {
                             ...summary.balances,
-                            spot: { ...summary.balances.spot },
-                            earn: { ...summary.balances.earn }
+                            spot: {...summary.balances.spot},
+                            earn: {...summary.balances.earn}
                         }
                     } : summary;
                 });
@@ -327,7 +327,7 @@ export default function TradeSummary() {
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
-                setError('fetchTradeSummary '+ err.message);
+                setError('fetchTradeSummary ' + err.message);
             } else {
                 setError('An unknown error occurred');
             }
@@ -379,7 +379,7 @@ export default function TradeSummary() {
                 <thead>
                 <tr className="bg-gray-50">
                     <th className="p-4 text-left border">Symbol</th>
-                    <th className="p-4 text-left border">Status</th>
+                    {/*<th className="p-4 text-left border">Status</th>*/}
                     <th className="p-4 text-left border">Balance</th>
                     <th className="p-4 text-left border">Trade Profit</th>
                     <th className="p-4 text-left border">Total Profit</th>
@@ -394,6 +394,8 @@ export default function TradeSummary() {
                     const matchingPrice = prices.find(p => p.symbol === item.symbol)?.price || 0;
                     const walletAmount = (Number(matchingPrice) * Number(item.balances.spot.free)) + (Number(matchingPrice) * Number(item.balances.spot.locked)) + (Number(matchingPrice) * Number(item.balances.earn.totalAmount))
                     const total = Number(walletAmount) + Number(item.totalProfit);
+                    const balanceProfit = walletAmount - item.lastBuyPrice
+                    const amtBalanceProfit = walletAmount > 10 ? (item.hold ? Math.floor(Number(balanceProfit) * 100) / 100 : Math.floor(Number(balanceProfit + item.lastSellPrice) * 100) / 100) : 0
 
                     return (
                         <tr key={item.symbol} className="hover:bg-gray-50">
@@ -406,25 +408,44 @@ export default function TradeSummary() {
                                     <span>{item.symbol.replace('FDUSD', '')}</span>
                                 </div>
                             </td>
-                            <td className="p-4 border">{walletAmount > 10 ? 'Hold' : ''}</td>
-                            <td className="p-4 border">{Math.floor(Number(walletAmount) * 100) / 100}</td>
-                            <td className={`p-4 border font-bold ${
-                                total > 0
-                                    ? 'text-green-600'
-                                    : total < 0
-                                        ? 'text-red-600'
-                                        : 'text-black'
-                            }`}>
-                                ${Math.floor(Number(item.totalProfit) * 100) / 100}
+                            {/*<td className="p-4 border">{walletAmount > 10 ? 'Hold' : ''}</td>*/}
+                            <td className="p-4 border">{Math.floor(Number(walletAmount) * 100) / 100}
+                                {' ['}
+                                <span className={`font-bold ${
+                                    amtBalanceProfit > 0
+                                        ? 'text-green-600'
+                                        : amtBalanceProfit < 0
+                                            ? 'text-red-600'
+                                            : 'text-black'
+                                }`}>
+                                    {amtBalanceProfit}
+                                </span>
+
+                                {']'}
                             </td>
-                            <td className={`p-4 border font-bold ${
-                                total > 0
-                                    ? 'text-green-600'
-                                    : total < 0
-                                        ? 'text-red-600'
-                                        : 'text-black'
-                            }`}>
-                                ${Math.floor(Number(total) * 100) / 100}
+                            <td className={`p-4 border font-bold`}>
+                                 <span className={`font-bold ${
+                                     item.totalProfit > 0
+                                         ? 'text-green-600'
+                                         : item.totalProfit < 0
+                                             ? 'text-red-600'
+                                             : 'text-black'
+                                 }`}>
+                                     ${Math.floor(Number(item.totalProfit) * 100) / 100}
+                                </span>
+
+                            </td>
+                            <td className={`p-4 border font-bold`}>
+                                 <span className={`font-bold ${
+                                     total > 0
+                                         ? 'text-green-600'
+                                         : total < 0
+                                             ? 'text-red-600'
+                                             : 'text-black'
+                                 }`}>
+                                      ${Math.floor(Number(total) * 100) / 100}
+                                </span>
+
                             </td>
                             {/*<td className="p-4 border">{item.tradeCount}</td>*/}
                             <td className="p-4 border">{Math.floor(Number(item.lastBuyPrice) * 100) / 100}</td>
