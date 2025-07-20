@@ -56,6 +56,22 @@ export default function TradeSummary() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    type FormattedNumberProps = {
+        value: number;
+        locale?: string;
+        minimumFractionDigits?: number;
+        maximumFractionDigits?: number;
+    }
+    function FormattedNumber({ value, locale = 'en-US', minimumFractionDigits = 2, maximumFractionDigits = 2 }: FormattedNumberProps) {
+        const formattedValue = new Intl.NumberFormat(locale, {
+            minimumFractionDigits,
+            maximumFractionDigits,
+        }).format(value);
+
+        return <span>{formattedValue}</span>;
+    }
+
+
     const removeTrailingFDUSD = (asset: string) => {
         return asset.replace('FDUSD', '');
     };
@@ -109,7 +125,6 @@ export default function TradeSummary() {
                     })
             );
             const results = await Promise.all(promises);
-            console.log(results);
             setSummaryData(prevData => {
                 if (!prevData || prevData.length === 0) {
                     // If prevData is empty, create new data structure
@@ -177,7 +192,6 @@ export default function TradeSummary() {
             if (!res.ok) throw new Error(`Error ${res.status}`);
 
             const acc: AccountSummary = await res.json();
-            console.log(acc);
 
             setSummaryData(prevData => {
                 if (!prevData || prevData.length === 0) {
@@ -290,8 +304,6 @@ export default function TradeSummary() {
                     })
             );
             const results = await Promise.all(promises);
-            console.log(results);
-
             setSummaryData(prevData => {
                 if (!prevData || prevData.length === 0) {
                     // If prevData is empty, create new data structure
@@ -351,8 +363,12 @@ export default function TradeSummary() {
             (Number(matchingPrice) * Number(item.balances.spot.locked));
         const earnValue = Number(matchingPrice) * Number(item.balances.earn.totalAmount);
         const walletAmount = spotValue + earnValue;
-        const total = walletAmount + Number(item.totalProfit);
-        return sum + total;
+
+        const balanceProfit = walletAmount - item.lastBuyPrice
+        const netProfit = walletAmount > 10 ? (item.hold ? balanceProfit : (balanceProfit + item.lastSellPrice)) : 0
+        const lastedSell = Math.floor(Number(item.lastSellPrice) * 100) / 100;
+
+        return Number(sum) + Number(lastedSell) + Number(netProfit);
     }, 0);
 
     return (
@@ -367,20 +383,21 @@ export default function TradeSummary() {
                     {loading ? 'Syncing...' : 'Sync'}
                 </button>
             </div>
-
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <h3 className="text-lg font-medium mb-2">Overall Summary</h3>
                 <p className="text-xl font-bold text-blue-600">
-                    Total Profit: ${totalOverallProfit.toFixed(2)}
+                    Total Profit: <FormattedNumber value={Math.floor(Number(totalOverallProfit)*100) /100}/>
                 </p>
             </div>
             <ProfitTotalChart/>
+            {/*<ProfitChart/>*/}
             <table className="w-full border-collapse">
                 <thead>
                 <tr className="bg-gray-50">
                     <th className="p-4 text-left border">Symbol</th>
                     {/*<th className="p-4 text-left border">Status</th>*/}
                     <th className="p-4 text-left border">Balance</th>
+                    <th className="p-4 text-left border">Change</th>
                     <th className="p-4 text-left border">Trade Profit</th>
                     <th className="p-4 text-left border">Total Profit</th>
                     {/*<th className="p-4 text-left border">Total Trades</th>*/}
@@ -410,7 +427,8 @@ export default function TradeSummary() {
                             </td>
                             {/*<td className="p-4 border">{walletAmount > 10 ? 'Hold' : ''}</td>*/}
                             <td className="p-4 border">{Math.floor(Number(walletAmount) * 100) / 100}
-                                {' ['}
+                            </td>
+                            <td className="p-4 border">
                                 <span className={`font-bold ${
                                     amtBalanceProfit > 0
                                         ? 'text-green-600'
@@ -420,8 +438,6 @@ export default function TradeSummary() {
                                 }`}>
                                     {amtBalanceProfit}
                                 </span>
-
-                                {']'}
                             </td>
                             <td className={`p-4 border font-bold`}>
                                  <span className={`font-bold ${
